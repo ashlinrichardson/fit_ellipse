@@ -1,5 +1,9 @@
 #!/usr/bin/env python2.7
-''' fit_ellipse.py by Nicky van Foreest '''
+''' fit_ellipse.py by Nicky van Foreest.
+
+Many thanks to Andrew G. Sund for his contribution:
+he recommended to implement with arctan2 (and % for float).
+'''
 import os
 import numpy as np
 from numpy.linalg import svd
@@ -30,8 +34,7 @@ def ellipse_axis_length(a):
             ((c - a) * np.sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
     down2 = (b * b - a * c) *\
             ((a - c) * np.sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
-    res1 = np.sqrt(up / down1)
-    res2 = np.sqrt(up / down2)
+    res1, res2 = np.sqrt(up / down1), np.sqrt(up / down2)
     return np.array([res1, res2])
 
 
@@ -42,30 +45,9 @@ def ellipse_angle_of_rotation(a):
     """
     b, c, d, f, g, a = a[1] / 2, a[2], a[3] / 2, a[4] / 2, a[5], a[0]
     if b == 0:
-        if a > c:
-            return 0
-        else:
-            return np.pi / 2
+        return (0. if a > c else np.pi / 2.)
     else:
-        if a > c:
-            return np.arctan(2 * b / (a - c)) / 2
-        else:
-            return np.pi / 2 + np.arctan(2 * b / (a - c)) / 2
-
-
-def fmod(x, y):
-    """@brief floating point modulus
-        e.g., fmod(theta, np.pi * 2) would keep an angle in [0, 2pi]
-
-    @param x angle to restrict
-    @param y end of  interval [0, y] to restrict to
-    """
-    r = x
-    while(r < 0):
-        r = r + y
-    while(r > y):
-        r = r - y
-    return r
+        return np.arctan2(2 * b, (a - c)) / 2
 
 
 def __fit_ellipse(x, y):
@@ -97,15 +79,12 @@ def fit_ellipse(x, y):
     """
     e = __fit_ellipse(x, y)
     centre, phi = ellipse_center(e), ellipse_angle_of_rotation(e)
-    axes = ellipse_axis_length(e)
-    a, b = axes
+    a, b = ellipse_axis_length(e)
 
     # assert that a is the major axis (otherwise swap and correct angle)
     if(b > a):
         tmp = b
         b = a
         a = tmp
-
-        # ensure the angle is betwen 0 and 2*pi
-        alpha = fmod(phi, 2. * np.pi)
+        phi %= 2. * np.pi  # ensure angle in [0, 2pi]
     return [a, b, centre[0], centre[1], phi]

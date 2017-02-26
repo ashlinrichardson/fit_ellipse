@@ -20,15 +20,13 @@ def rotation_matrix(theta):
 # test the fitting on randomly generated ellipse data
 n_samples = 40
 for sample_i in range(0, n_samples):
-    arc = 2.0
-    R = np.arange(0, arc * np.pi, 0.01)
+    R = np.arange(0, 2. * np.pi, 0.01)
     n = len(R)
 
+    def rand_d(n):
+        return .1 + 1.5 * rand() - .1 * rand() * rand(n)
     # random ellipse data
-    x_0 = .1 + 1.5*rand() - .1*rand()*rand(n)
-    y_0 = .1 + 1.5*rand() - .1*rand()*rand(n)
-    y_s = .1 + 1.5*rand() - .1*rand()*rand(n)
-    x_s = .1 + 1.5*rand() - .1*rand()*rand(n)
+    x_0, y_0, y_s, x_s = rand_d(n), rand_d(n), rand_d(n), rand_d(n)
     x = x_0 + x_s * np.cos(R) + .01*rand(n)
     y = y_0 + y_s * np.sin(R) + .01*rand(n)
 
@@ -57,5 +55,7 @@ for sample_i in range(0, n_samples):
     plt.plot(xx, yy, '+', color='red', label='fitted ellipse', linewidth=2.)
     plt.legend()
     plt.axes().set_aspect('equal', 'datalim')
-    plt.savefig('plot' + str(sample_i) + '.png')
+    plt_fn = 'plot' + str(sample_i) + '.png'
+    plt.savefig(plt_fn)
+    print "+w", plt_fn
     plt.clf()
